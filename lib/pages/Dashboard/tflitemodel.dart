@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite_v2/tflite_v2.dart';
+// import 'package:tflite_v2/tflite_v2.dart';
 
 class ImagePickerDemo extends StatefulWidget {
   const ImagePickerDemo({super.key});
@@ -14,27 +17,8 @@ class ImagePickerDemo extends StatefulWidget {
 }
 
 class _ImagePickerDemoState extends State<ImagePickerDemo> {
-  // final ImagePicker _picker = ImagePicker();
-  // XFile? _image;
-  // File? file;
-  // // ignore: prefer_typing_uninitialized_variables
-  // var _recognitions;
-  // var v = "";
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   loadmodel().then((value) {
-  //     setState(() {});
-  //   });
-  // }
-
-  // loadmodel() async {
-  //   await Tflite.loadModel(
-  //     model: "lib/images/model_unquant.tflite",
-  //     labels: "lib/images/labels.txt",
-  //   );
-  // }
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String imageurl = '';
   String? _recognitions = "";
   File? image;
 
@@ -64,43 +48,122 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
     }
   }
 
-  // Future detectimage(XFile image) async {
-  //   int startTime = DateTime.now().millisecondsSinceEpoch;
-  //   var recognitions = await Tflite.runModelOnImage(
-  //     path: image.path,
-  //     numResults: 6,
-  //     threshold: 0.05,
-  //     imageMean: 127.5,
-  //     imageStd: 127.5,
-  //   );
-  //   setState(() {
-  //     _recognitions = recognitions;
-  //     v = recognitions.toString();
-  //   });
-  //   print(_recognitions);
-  //   int endTime = DateTime.now().millisecondsSinceEpoch;
-  //   print("Inference took ${endTime - startTime}ms");
-
-  // }
-
   Future<void> uploadimage() async {
-    print('here');
     final request = http.MultipartRequest(
         "POST", Uri.parse('http://172.17.48.107:5000/upload'));
-
     final headers = {"Content-type": "multipart/form-data"};
     request.files.add(http.MultipartFile(
         "image", image!.readAsBytes().asStream(), image!.lengthSync(),
         filename: image!.path.split("/").last));
+
     request.headers.addAll(headers);
-    print('2 here');
     final response = await request.send();
-    print('message sent');
     http.Response res = await http.Response.fromStream(response);
     final resJson = jsonDecode(res.body);
+
     _recognitions = resJson['message'];
-    print('3 here');
     setState(() {});
+  }
+
+  Future<void> predictimagestore() async {
+    var userRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(_auth.currentUser?.uid)
+        .collection('Predicted Moods')
+        .doc();
+    String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference referenceRoot = FirebaseStorage.instance.ref();
+    Reference referenceDirImages = referenceRoot.child('images');
+    Reference referenceImageToUpload = referenceDirImages.child(uniqueFileName);
+    DateTime now = DateTime.now();
+    try {
+      await referenceImageToUpload.putFile(File(image!.path));
+      imageurl = await referenceImageToUpload.getDownloadURL();
+    } catch (e) {
+      print(e);
+    }
+    await userRef.set({
+      'emotionpredicted': _recognitions.toString(),
+      'imageurl': imageurl,
+      'timestamp': now,
+    });
+    print('done Uploading the image to database');
+  }
+
+  Future<void> updatecount() async {
+    print('updating the count');
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String userId = _auth.currentUser!.uid;
+    DocumentReference userDocRef = firestore.collection('Users').doc(userId);
+
+    userDocRef.get().then((docSnapshot) {
+      if (docSnapshot.exists) {
+        FirebaseFirestore.instance
+            .collection('Users')
+            .doc(_auth.currentUser?.uid)
+            .get()
+            .then((value) {
+          if (value.exists) {
+            var userEmotionCount = value.data()?[_recognitions] as int?;
+            if (userEmotionCount != null) {
+              userEmotionCount++;
+              var updateData = {_recognitions: userEmotionCount};
+              value.reference.update(updateData.cast<Object, Object?>());
+
+              print("Fetched =>>> $userEmotionCount (Updated)");
+            } else {
+              print("Fetched value is null.");
+            }
+          } else {
+            print("Document does not exist.");
+          }
+        }).catchError((error) {
+          print("Error fetching data: $error");
+        });
+      } else {
+        print('Document does not exist. Initializing with default values...');
+
+        Map<String, dynamic> initialData = {
+          'angry': 0,
+          'sadness': 0,
+          'contempt': 0,
+          'disgust': 0,
+          'fear': 0,
+          'happy': 0,
+          'surprise': 0,
+        };
+
+        userDocRef.set(initialData).then((_) {
+          print('Document initialized with default values.');
+        }).catchError((error) {
+          print('Error initializing document: $error');
+        });
+        FirebaseFirestore.instance
+            .collection('Users')
+            .doc(_auth.currentUser?.uid)
+            .get()
+            .then((value) {
+          if (value.exists) {
+            var userEmotionCount = value.data()?[_recognitions] as int?;
+            if (userEmotionCount != null) {
+              userEmotionCount++;
+              var updateData = {_recognitions: userEmotionCount};
+              value.reference.update(updateData.cast<Object, Object?>());
+
+              print("Fetched =>>> $userEmotionCount (Updated)");
+            } else {
+              print("Fetched value is null.");
+            }
+          } else {
+            print("Document does not exist.");
+          }
+        }).catchError((error) {
+          print("Error fetching data: $error");
+        });
+      }
+    }).catchError((error) {
+      print('Error checking document existence: $error');
+    });
   }
 
   @override
@@ -128,11 +191,14 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
               onPressed: getImage,
               child: const Text('Camera'),
             ),
-            const SizedBox(height: 20), // Display recognition results here
+            const SizedBox(height: 20),
             ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   uploadimage();
+                  predictimagestore();
+                  updatecount();
                 },
+                //['anger', 'contempt', 'disgust', 'fear', 'happy', 'sadness', 'surprise']
                 child: const Text("Detect Image")),
             Text(_recognitions.toString()),
           ],

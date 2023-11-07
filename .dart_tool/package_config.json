@@ -98,6 +98,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "equatable",
+      "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/equatable-2.0.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "fake_async",
       "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/fake_async-1.3.1",
       "packageUri": "lib/",
@@ -192,6 +198,12 @@
       "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_storage_web-3.6.11",
       "packageUri": "lib/",
       "languageVersion": "2.18"
+    },
+    {
+      "name": "fl_chart",
+      "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/fl_chart-0.64.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "flutter",
@@ -692,7 +704,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-11-03T14:28:30.790944Z",
+  "generated": "2023-11-07T13:52:48.203306Z",
   "generator": "pub",
   "generatorVersion": "3.1.3"
 }
