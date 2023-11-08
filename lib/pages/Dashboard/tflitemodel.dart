@@ -50,7 +50,7 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
 
   Future<void> uploadimage() async {
     final request = http.MultipartRequest(
-        "POST", Uri.parse('http://172.17.48.107:5000/upload'));
+        "POST", Uri.parse('http://192.168.178.31:5000/upload'));
     final headers = {"Content-type": "multipart/form-data"};
     request.files.add(http.MultipartFile(
         "image", image!.readAsBytes().asStream(), image!.lengthSync(),
@@ -176,31 +176,57 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
             if (image != null)
               Image.file(
                 File(image!.path),
-                height: 200,
-                width: 200,
+                height: 300,
+                width: 300,
                 fit: BoxFit.cover,
               )
             else
               const Text('No image selected'),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Gallery'),
-            ),
-            ElevatedButton(
-              onPressed: getImage,
-              child: const Text('Camera'),
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text('Gallery'),
+              ),
+              const SizedBox(width: 30),
+              ElevatedButton(
+                onPressed: getImage,
+                child: const Text('Camera'),
+              ),
+            ]),
             const SizedBox(height: 20),
-            ElevatedButton(
-                onPressed: () async {
-                  uploadimage();
-                  predictimagestore();
-                  updatecount();
-                },
-                //['anger', 'contempt', 'disgust', 'fear', 'happy', 'sadness', 'surprise']
-                child: const Text("Detect Image")),
-            Text(_recognitions.toString()),
+            Container(
+              height: 200, // Set the desired height
+              width: 300, // Set the desired width
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: const BorderSide(
+                    color: Color.fromARGB(255, 231, 228, 228),
+                    width: 1.0,
+                  ),
+                ),
+                elevation: 1,
+                margin: const EdgeInsets.all(2),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          uploadimage();
+                          predictimagestore();
+                          updatecount();
+                        },
+                        child: const Text("Detect Image"),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(_recognitions.toString()),
+                    ],
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),

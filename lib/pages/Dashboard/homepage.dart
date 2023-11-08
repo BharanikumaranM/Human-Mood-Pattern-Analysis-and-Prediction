@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:lsm/pages/Dashboard/datalist.dart';
 import 'package:lsm/pages/Dashboard/graph.dart';
+// import 'package:lsm/pages/Dashboard/piechart.dart';
 import 'package:lsm/pages/Dashboard/tflitemodel.dart';
 
 class HomePage extends StatefulWidget {
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
             ])
           : null,
       body: tabs[_selectedIndex],
+      
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,

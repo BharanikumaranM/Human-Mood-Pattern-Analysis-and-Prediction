@@ -476,6 +476,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "pie_chart",
+      "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/pie_chart-5.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "pigeon",
       "rootUri": "file:///C:/Users/bOct0/AppData/Local/Pub/Cache/hosted/pub.dev/pigeon-11.0.1",
       "packageUri": "lib/",
@@ -704,7 +710,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-11-07T13:52:48.203306Z",
+  "generated": "2023-11-08T06:27:23.254445Z",
   "generator": "pub",
   "generatorVersion": "3.1.3"
 }
