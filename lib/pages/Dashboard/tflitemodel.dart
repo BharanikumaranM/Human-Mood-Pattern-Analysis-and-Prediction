@@ -21,6 +21,7 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
   String imageurl = '';
   String? _recognitions = "";
   File? image;
+  String? description = "";
 
   Future<void> _pickImage() async {
     try {
@@ -61,7 +62,24 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
     http.Response res = await http.Response.fromStream(response);
     final resJson = jsonDecode(res.body);
 
-    _recognitions = resJson['message'];
+    // _recognitions = resJson['message'];
+    // Get the message string from resJson
+    String message = resJson['message'];
+
+    // Split the string into a list of words
+    List<String> words = message.split(' ');
+
+    // Extract the first word and store it in _recognitions
+    String recognitions = words.isNotEmpty ? words[0] : '';
+    _recognitions = recognitions;
+    // Store the remaining words in another variable
+    String remainingWords = words.length > 1 ? words.sublist(1).join(' ') : '';
+    description = remainingWords;
+
+    // // Print the results
+    // print("_recognitions: $recognitions");
+    // print("Remaining words: $remainingWords");
+
     setState(() {});
   }
 
@@ -104,7 +122,9 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
             .get()
             .then((value) {
           if (value.exists) {
-            var userEmotionCount = value.data()?[_recognitions] as int?;
+            var userEmotionCount =
+                value.data()?[_recognitions.toString()] as int?;
+            print(userEmotionCount);
             if (userEmotionCount != null) {
               userEmotionCount++;
               var updateData = {_recognitions: userEmotionCount};
@@ -112,6 +132,7 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
 
               print("Fetched =>>> $userEmotionCount (Updated)");
             } else {
+              print("HERE IS THE PROBLEM");
               print("Fetched value is null.");
             }
           } else {
@@ -195,7 +216,7 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
               ),
             ]),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               height: 200, // Set the desired height
               width: 300, // Set the desired width
               child: Card(
@@ -221,7 +242,16 @@ class _ImagePickerDemoState extends State<ImagePickerDemo> {
                         child: const Text("Detect Image"),
                       ),
                       const SizedBox(height: 20),
-                      Text(_recognitions.toString()),
+                      Text(
+                        _recognitions.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(description.toString(),
+                          style: const TextStyle(height: 1.4)),
                     ],
                   ),
                 ),
